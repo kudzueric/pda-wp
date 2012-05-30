@@ -1,0 +1,19 @@
+#pda { width: 100%; clear: both; padding: 0; height: 100%; position: relative;}
+#pda * { font-size: 92%; }
+#pda h2 {font-size: 100%; margin-top: .35em; margin-bottom: .15em;}
+#pda h2.continued { font-weight: normal; }
+#pda h2.continued:after { content: "…" ; }
+#pda + * {clear: both; margin-top: .5in;} 
+#pda ul.pda-list { list-style: none; margin-left: 1em; margin-top: 0; margin-bottom: 0; }
+#pda ul.pda-list li {  text-indent: -.75em; }
+.pda-error { color: red; }
+#pda span.category {font-style: italic; display: block; }
+#pda span.description { display: block; margin-left: 5em; }
+#pda span.category_count { display: none; } 
+
+@media screen and (min-width: 900px) {
+	#pda div.pdacol { width: 24%; float: left; padding: .5%; margin-bottom: 1.5em;}
+}
+@media screen and (max-width: 900px) {
+	#pda h2.continued { display: none; }
+}
