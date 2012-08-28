@@ -23,17 +23,18 @@ class PleasantDistrictShortcodes {
 	}
 
 	function template_a($json, $cssclass) {
-		echo "<div id=\"pda\"><dl class=\"" . $cssclass . "\">";
+		$ret = "";
+		$ret .= "<div id=\"pda\"><dl class=\"" . $cssclass . "\">";
 		foreach ($json->items as $item) {
 			if ($item->BusinessWebSite == ''){
-				echo ("<dt>" . $item->BusinessName . "</dt>");
+				$ret .=  ("<dt>" . $item->BusinessName . "</dt>");
 			} else {
-				echo ("<dt><a href=\"" . $item->BusinessWebSite . "\">" . $item->BusinessName . "</a></dt>");
+				$ret .=  ("<dt><a href=\"" . $item->BusinessWebSite . "\">" . $item->BusinessName . "</a></dt>");
 			}
-			echo "<dd><span class=\"category\">" . $item->Category . "</span> <span class=\"description\" >" . $item->BusinessDescription . "</span></dd>";
+			$ret .=  "<dd><span class=\"category\">" . $item->Category . "</span> <span class=\"description\" >" . $item->BusinessDescription . "</span></dd>";
 		}
-		echo "</dl></div>";
-
+		$ret .=  "</dl></div>";
+		return $ret;
 	}
 
 	function get_categories($json){
@@ -54,20 +55,21 @@ class PleasantDistrictShortcodes {
 
 	function template_b($json, $cssclass) {
 		$categories = $this->get_categories($json);
-		echo "<div id=\"pda\">";
+		$ret = "";
+		$ret .=  "<div id=\"pda\">";
 		foreach ($categories as $cat => $items){
-			echo "<h2>" . $cat . " <span class=\"category_count\">" . count($items) ."<span></h2><ul class=\"" . $cssclass . "\">" ;
+			$ret .=  "<h2>" . $cat . " <span class=\"category_count\">" . count($items) ."<span></h2><ul class=\"" . $cssclass . "\">" ;
 			foreach ($items as $item) {
 				if ($item->BusinessWebSite == ""){
-					echo "<li>" . $item->BusinessName ."</li>";
+					$ret .=  "<li>" . $item->BusinessName ."</li>";
 				} else {
-					echo "<li><a href=\"" . $item->BusinessWebSite . "\">" . $item->BusinessName . "</a></li>";
+					$ret .=  "<li><a href=\"" . $item->BusinessWebSite . "\">" . $item->BusinessName . "</a></li>";
 				}
 			}
-			echo "</ul>";
+			$ret .=  "</ul>";
 		}
-		echo "</div>";
-
+		$ret .=  "</div>";
+		return $ret;
 	}
 
 	function template_c($json, $cssclass) {
@@ -78,86 +80,89 @@ class PleasantDistrictShortcodes {
 		$target_count = ceil(($business_count+$category_count)/4);
 		$current_count = 0;
 		$column_count = 1;
-		echo "<div id=\"pda\">";
+		$ret = "";
+		$ret .=  "<div id=\"pda\">";
 		foreach ($categories as $cat => $items){
 			if ($current_count == 0){
-				echo "<div class=\"pdacol\" id=\"pdacol-" . $column_count . "\">";
+				$ret .=  "<div class=\"pdacol\" id=\"pdacol-" . $column_count . "\">";
 			}
 			$current_count +=  1;
 			$section_count = 0;
-			echo "<h2>" . $cat . " <span class=\"category_count\">" . count($items) ."</span></h2><ul class=\"" . $cssclass . "\">" ;
+			$ret .=  "<h2>" . $cat . " <span class=\"category_count\">" . count($items) ."</span></h2><ul class=\"" . $cssclass . "\">" ;
 			foreach ($items as $item) {
 				$current_count += 1;
 				$section_count += 1;
 				if ($item->WebSite == ""){
-					echo "<li><a href=\"http://www.pleasantdistrict.org/b" . $item->key . ".htm\">" . $item->Name . "</a></li>";
+					$ret .=  "<li><a href=\"http://www.pleasantdistrict.org/b" . $item->key . ".htm\">" . $item->Name . "</a></li>";
 				} else {
-					echo "<li><a href=\"" . $item->WebSite . "\">" . $item->Name . "</a></li>";
+					$ret .=  "<li><a href=\"" . $item->WebSite . "\">" . $item->Name . "</a></li>";
 				}
 				if (($current_count > $target_count) and ($section_count > 2) and ((count($items)-$section_count)>2) ){
 					$current_count = 0;
 					$column_count += 1;
-					echo "</ul></div><div class=\"pdacol\" id=\"pdacol-" . $column_count . "\">";
-					echo "<h2 class=\"continued\">" . $cat . "</h2>";
-					echo "<ul class=\"" . $cssclass . "\">";
+					$ret .=  "</ul></div><div class=\"pdacol\" id=\"pdacol-" . $column_count . "\">";
+					$ret .=  "<h2 class=\"continued\">" . $cat . "</h2>";
+					$ret .=  "<ul class=\"" . $cssclass . "\">";
 				}
 			}
-			echo "</ul>";
+			$ret .=  "</ul>";
 			if ($current_count >= $target_count){
 				$current_count = 0;
 				$column_count += 1;
-				echo "</div>";
+				$ret .=  "</div>";
 			}
 		}
 		/* close the last column */
 		if ($current_count > 0 ) {
-			echo "</div>";
+			$ret .=  "</div>";
 		}
-		echo "</div>";
-
+		$ret .=  "</div>";
+		return $ret;
 	}
 
 		function pda_members($atts) {
-		extract(shortcode_atts(array(
-			'cssclass' => 'pda-list',
-			'cache' => 'true',
-			'template' => 'a',
-			'members' => 'true',
-		), $atts));
-		global $post;
-		$key =  $post->ID . "-" . $cache . $template . $members ;
+			extract(shortcode_atts(array(
+				'cssclass' => 'pda-list',
+				'cache' => 'true',
+				'template' => 'a',
+				'members' => 'true',
+			), $atts));
+			$ret = "";
+			
+			global $post;
+			$key =  $post->ID . "-" . $cache . $template . $members ;
 
-		$response = get_transient($key);
-		if ($response == false or $cache != 'true' ){
-			delete_transient($key);
-			if ($members == 'true') {
-				$response = wp_remote_get('http://www.pleasantdistrict.org/members.json');
-			} else {
-				$response = wp_remote_get('http://www.pleasantdistrict.org/businesses.json');
-			}
-			if(!is_wp_error($response) and $cache == 'true') {
-				set_transient( $key, $response, 60*60*12 );
-			}
-		}
-		if(is_wp_error($response)) {
-			echo ("<div class=\"pda-error\">Error getting Pleasant District Association list.</div>");
-		} else {
-			$json = json_decode($response['body']);
-			if ($json == null) {
-				echo ("<div class=\"pda-error\">Error processing results.</div>");
-				print_r($response);
-			} else {
-				if ($template == 'b') {
-					$this->template_b($json, $cssclass);
-				} elseif ($template == 'c') {
-					$this->template_c($json, $cssclass);
+			$response = get_transient($key);
+			if ($response == false or $cache != 'true' ){
+				delete_transient($key);
+				if ($members == 'true') {
+					$response = wp_remote_get('http://www.pleasantdistrict.org/members.json');
 				} else {
-					$this->template_a($json, $cssclass);
+					$response = wp_remote_get('http://www.pleasantdistrict.org/businesses.json');
+				}
+				if(!is_wp_error($response) and $cache == 'true') {
+					set_transient( $key, $response, 60*60*12 );
 				}
 			}
+			if(is_wp_error($response)) {
+				$ret .=  ("<div class=\"pda-error\">Error getting Pleasant District Association list.</div>");
+			} else {
+				$json = json_decode($response['body']);
+				if ($json == null) {
+					$ret .=  ("<div class=\"pda-error\">Error processing results.</div>");
+					
+				} else {
+					if ($template == 'b') {
+						$ret .= $this->template_b($json, $cssclass);
+					} elseif ($template == 'c') {
+						$ret .= $this->template_c($json, $cssclass);
+					} else {
+						$ret .= $this->template_a($json, $cssclass);
+					}
+				}
 
-		}
-
+			}
+			return $ret;
 	}
 
 }
