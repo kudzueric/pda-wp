@@ -10,6 +10,53 @@
 /* not yet implemented */
 // include (WP_PLUGIN_DIR . "/PleasantDistrictAssociation/options.php");
 
+
+/**
+ * Retrieve and cache PDA data
+ **/
+ class PDAData {
+	const MEMBERURL = 'http://www.pleasantdistrict.org/members.json';
+	const BUSINESSURL = 'http://www.pleasantdistrict.org/businesses.json';
+	private $response = null;
+	private $json = null;
+	
+	public function PDAData ($members = false) {
+		$key =  'pdabusiness' ;
+		if ($members) $key = 'pdamember';
+
+		$this->response = get_transient($key);
+		if ($this->response === false){
+			if ($members == 'true') {
+				$this->response = wp_remote_get(self::MEMBERURL);
+			} else {
+				$this->response = wp_remote_get(self::BUSINESSURL );
+			}
+			if(!is_wp_error($response) ) {
+				set_transient( $key, $this->response, 60*5 );
+			} else {
+				$this->response = null;
+			}
+		}
+		
+		if ($this->response != null) {
+			$this->json = json_decode($this->response['body']);
+		}
+	}
+	
+	public function error() {
+		if ($this->json == null) return true;
+	}
+	
+	public function json () {
+		return $this->json;
+	}
+	
+ 
+ }
+
+/**
+ * Handle PDA shortcodes 
+**/
 class PleasantDistrictShortcodes {
 	function PleasantDistrictShortcodes() {}
 	function add_css () {
@@ -123,44 +170,23 @@ class PleasantDistrictShortcodes {
 		function pda_members($atts) {
 			extract(shortcode_atts(array(
 				'cssclass' => 'pda-list',
-				'cache' => 'true',
 				'template' => 'a',
 				'members' => 'true',
 			), $atts));
 			$ret = "";
 			
-			global $post;
-			$key =  $post->ID . "-" . $cache . $template . $members ;
-
-			$response = get_transient($key);
-			if ($response == false or $cache != 'true' ){
-				delete_transient($key);
-				if ($members == 'true') {
-					$response = wp_remote_get('http://www.pleasantdistrict.org/members.json');
-				} else {
-					$response = wp_remote_get('http://www.pleasantdistrict.org/businesses.json');
-				}
-				if(!is_wp_error($response) and $cache == 'true') {
-					set_transient( $key, $response, 60*60*12 );
-				}
-			}
-			if(is_wp_error($response)) {
+			$data = new PDAData($members);
+			if($data->error()) {
 				$ret .=  ("<div class=\"pda-error\">Error getting Pleasant District Association list.</div>");
 			} else {
-				$json = json_decode($response['body']);
-				if ($json == null) {
-					$ret .=  ("<div class=\"pda-error\">Error processing results.</div>");
-					
+				$json = $data->json();
+				if ($template == 'b') {
+					$ret .= $this->template_b($json, $cssclass);
+				} elseif ($template == 'c') {
+					$ret .= $this->template_c($json, $cssclass);
 				} else {
-					if ($template == 'b') {
-						$ret .= $this->template_b($json, $cssclass);
-					} elseif ($template == 'c') {
-						$ret .= $this->template_c($json, $cssclass);
-					} else {
-						$ret .= $this->template_a($json, $cssclass);
-					}
+					$ret .= $this->template_a($json, $cssclass);
 				}
-
 			}
 			return $ret;
 	}
