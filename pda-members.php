@@ -168,6 +168,8 @@ class PleasantDistrictShortcodes {
 	}
 
 		function pda_members($atts) {
+			global $wp_query;
+			if (!$wp_query->is_single() && !$wp_query->is_page()) return;
 			extract(shortcode_atts(array(
 				'cssclass' => 'pda-list',
 				'template' => 'a',
