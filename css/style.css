@@ -17,3 +17,6 @@
 @media screen and (max-width: 900px) {
 	#pda h2.continued { display: none; }
 }
+
+.pda-featured .name { display: block; font-size: larger;}
+.pda-featured .description { display: block; font-style: italic;}
