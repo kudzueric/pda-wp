@@ -279,9 +279,9 @@ if(!function_exists('_pdalog')){
   function _pdalog( $message ) {
     if( WP_DEBUG === true ){
       if( is_array( $message ) || is_object( $message ) ){
-         print_r( $message, true );
+         error_log(print_r( $message, true ));
       } else {
-         echo $message ;
+         error_log ($message );
       }
     }
   }
