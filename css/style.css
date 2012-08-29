@@ -18,5 +18,6 @@
 	#pda h2.continued { display: none; }
 }
 
-.pda-featured .name { display: block; font-size: larger;}
-.pda-featured .description { display: block; font-style: italic;}
+.pda-featured .name { font-size: larger;}
+.pda-featured .description { font-style: italic; margin-top: .5em;}
+.pda-featured .slogan { margin-top: 1em;}
