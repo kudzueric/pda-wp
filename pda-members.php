@@ -55,10 +55,10 @@
 	/**
 	* return a random member every hour
 	**/
-	public function featured() {
+	public function featured($length=1) {
 		_pdalog("getting random member");
 		$key = "pdafeatured";
-		if( WP_DEBUG === true ) delete_transient($key);
+		if( WP_DEBUG === true || $length == 0 ) delete_transient($key);
 		$featured = get_transient($key);
 		if ( $featured === false) {
 			$featured = null;
@@ -68,7 +68,7 @@
 				$randitem = rand(0, $maxitems-1);
 				_pdalog("random: " . $randitem);
 				$featured = $this->json->items[$randitem];
-				set_transient($key, $featured, 60*60);
+				set_transient($key, $featured, 60*60*$length);
 			}
 		}
 		return $featured;
@@ -103,15 +103,15 @@ class PDA_Featured_Widget extends WP_Widget {
 		extract( $args );
 		$title = apply_filters( 'widget_title', $instance['title'] );
 		$slogan = apply_filters( 'widget_title', $instance['slogan'] );
+		if (!empty($instance['length'])) $length = $instance['length'];
 		
 		echo $before_widget;
 		if ( ! empty( $title ) ) {
 			echo $before_title . $title . $after_title;
 		}
 		
-		
 		$members = new PDAData(true);
-		$featured = $members->featured();
+		$featured = $members->featured($length);
 		echo '<div class="pda-featured">';
 		if ($featured == null ) {
 			echo "<div>enjoy the Pleasant District!</div>";
@@ -133,6 +133,7 @@ class PDA_Featured_Widget extends WP_Widget {
 		$instance = array();
 		$instance['title'] = strip_tags( $new_instance['title'] );
 		$instance['slogan'] = strip_tags( $new_instance['slogan'] );
+		$instance['length'] = intval( $new_instance['length'] );
 		return $instance;
 	}
 
@@ -149,6 +150,12 @@ class PDA_Featured_Widget extends WP_Widget {
 		else {
 			$slogan = __( '', 'text_domain' );
 		}
+		if ( isset ( $instance[ 'length' ] )) {
+			$length = $instance[ 'length' ];
+		} else {
+			$length = '2';
+		}		
+
 		?>
 		<p>
 			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> 
@@ -158,6 +165,17 @@ class PDA_Featured_Widget extends WP_Widget {
 			<label for="<?php echo $this->get_field_id( 'slogan' ); ?>"><?php _e( 'Call to action:' ); ?></label> 
 			<input class="widefat" id="<?php echo $this->get_field_id( 'slogan' ); ?>" name="<?php echo $this->get_field_name( 'slogan' ); ?>" type="text" value="<?php echo esc_attr( $slogan ); ?>" />
 		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'length' ); ?>"><?php _e( 'Hours:' ); ?></label>
+			<select class="widefat" id="<?php echo $this->get_field_id( 'length' ); ?>" name="<?php echo $this->get_field_name( 'length' ); ?>" >
+				<option <?php if ($length == '0') echo "selected" ?>>0</option>
+				<option <?php if ($length == '2') echo "selected" ?>>2</option>
+				<option <?php if ($length == '8') echo "selected" ?>>8</option>
+				<option <?php if ($length == '16') echo "selected" ?>>16</option>
+				<option <?php if ($length == '24') echo "selected" ?>>24</option>
+			</select>
+		</p>
+
 		<?php 
 	}
 
