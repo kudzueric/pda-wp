@@ -6,18 +6,16 @@ function pda_plugin_admin_add_page() {
 }
 
 function pda_plugin_options_page() {
-?>
+	?>
 <div>
 <h2>Pleasant District Association Plugin Options</h2>
 Member shortcodes.
-<form action="options.php" method="post">
-<?php settings_fields('plugin_options'); ?>
-<?php do_settings_sections('pda-settings'); ?>
+<form action="options.php" method="post"><?php settings_fields('plugin_options'); ?>
+	<?php do_settings_sections('pda-settings'); ?> <input name="Submit"
+	type="submit" value="<?php esc_attr_e('Save Changes'); ?>" /></form>
+</div>
 
-<input name="Submit" type="submit" value="<?php esc_attr_e('Save Changes'); ?>" />
-</form></div>
-
-<?php
+	<?php
 }?>
 
 <?php // add the admin settings and such
@@ -31,7 +29,7 @@ function pda_plugin_admin_init(){
 
 function pda_plugin_section_text() {
 	?>
-	<p>Settings goodness.</p>
+<p>Settings goodness.</p>
 	<?php
 }
 
@@ -39,11 +37,11 @@ function pda_plugin_section_text() {
 
 <?php // validate our options
 function plugin_options_validate($input) {
-$options = get_option('plugin_options');
-$options['text_string'] = trim($input['text_string']);
-if(!preg_match('/^[a-z0-9]{32}$/i', $options['text_string'])) {
-$options['text_string'] = '';
-}
-return $options;
+	$options = get_option('plugin_options');
+	$options['text_string'] = trim($input['text_string']);
+	if(!preg_match('/^[a-z0-9]{32}$/i', $options['text_string'])) {
+		$options['text_string'] = '';
+	}
+	return $options;
 }
 ?>

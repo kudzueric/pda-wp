@@ -14,17 +14,17 @@
 /**
  * Retrieve and cache PDA data
  **/
- class PDAData {
+class PDAData {
 	const MEMBERURL = 'http://www.pleasantdistrict.org/members.json';
 	const BUSINESSURL = 'http://www.pleasantdistrict.org/businesses.json';
 	private $response = null;
 	private $json = null;
-	
+
 	public function PDAData ($members = false) {
 		$key =  'pdabusiness' ;
 		if ($members) $key = 'pdamember';
 		if( WP_DEBUG === true ) delete_transient($key);
-		
+
 		$this->response = get_transient($key);
 		if ($this->response === false){
 			if ($members == 'true') {
@@ -43,18 +43,18 @@
 			$this->json = json_decode($this->response['body']);
 		}
 	}
-	
+
 	public function error() {
 		if ($this->json == null) return true;
 	}
-	
+
 	public function json () {
 		return $this->json;
 	}
-	
+
 	/**
-	* return a random member every hour
-	**/
+	 * return a random member every hour
+	 **/
 	public function featured() {
 		_pdalog("getting random member");
 		$key = "pdafeatured";
@@ -73,7 +73,7 @@
 		}
 		return $featured;
 	}
- }
+}
 
 /**
  * Adds Pleasant District Featured member widget.
@@ -87,7 +87,7 @@ class PDA_Featured_Widget extends WP_Widget {
 		parent::__construct(
 	 		'pda_featured_widget', // Base ID
 			'PDA Featured Member', // Name
-			array( 'description' => __( 'Get random Pleasant District Association member.', 'text_domain' ), ) 
+		array( 'description' => __( 'Get random Pleasant District Association member.', 'text_domain' ), )
 		);
 	}
 
@@ -102,15 +102,15 @@ class PDA_Featured_Widget extends WP_Widget {
 	public function widget( $args, $instance ) {
 		extract( $args );
 		$title = apply_filters( 'widget_title', $instance['title'] );
-		
+
 		if (empty($title)) $title = "Featured";
-		
+
 		echo $before_widget;
 		if ( ! empty( $title ) ) {
 			echo $before_title . $title . $after_title;
 		}
-		
-		
+
+
 		$members = new PDAData(true);
 		$featured = $members->featured();
 		echo '<div class="pda-featured">';
@@ -125,11 +125,11 @@ class PDA_Featured_Widget extends WP_Widget {
 		echo $after_widget;
 
 	}
-}	
+}
 
 /**
- * Handle PDA shortcodes 
-**/
+ * Handle PDA shortcodes
+ **/
 class PleasantDistrictShortcodes {
 	function PleasantDistrictShortcodes() {}
 	function add_css () {
@@ -240,31 +240,31 @@ class PleasantDistrictShortcodes {
 		return $ret;
 	}
 
-		function pda_members($atts) {
-			global $wp_query;
-			if (!$wp_query->is_single() && !$wp_query->is_page()) return;
-			extract(shortcode_atts(array(
+	function pda_members($atts) {
+		global $wp_query;
+		if (!$wp_query->is_single() && !$wp_query->is_page()) return;
+		extract(shortcode_atts(array(
 				'cssclass' => 'pda-list',
 				'template' => 'a',
 				'members' => 'true',
-			), $atts));
-			$ret = "";
+		), $atts));
+		$ret = "";
 			
-			if ($members == '' || $members == 'no' || $members == 'false') $members = false;
-			$data = new PDAData($members);
-			if($data->error()) {
-				$ret .=  ("<div class=\"pda-error\">Error getting Pleasant District Association list.</div>");
+		if ($members == '' || $members == 'no' || $members == 'false') $members = false;
+		$data = new PDAData($members);
+		if($data->error()) {
+			$ret .=  ("<div class=\"pda-error\">Error getting Pleasant District Association list.</div>");
+		} else {
+			$json = $data->json();
+			if ($template == 'b') {
+				$ret .= $this->template_b($json, $cssclass);
+			} elseif ($template == 'c') {
+				$ret .= $this->template_c($json, $cssclass);
 			} else {
-				$json = $data->json();
-				if ($template == 'b') {
-					$ret .= $this->template_b($json, $cssclass);
-				} elseif ($template == 'c') {
-					$ret .= $this->template_c($json, $cssclass);
-				} else {
-					$ret .= $this->template_a($json, $cssclass);
-				}
+				$ret .= $this->template_a($json, $cssclass);
 			}
-			return $ret;
+		}
+		return $ret;
 	}
 
 }
@@ -276,13 +276,13 @@ add_action("wp_print_styles", array($pdacode, 'add_css'));
 
 
 if(!function_exists('_pdalog')){
-  function _pdalog( $message ) {
-    if( WP_DEBUG === true ){
-      if( is_array( $message ) || is_object( $message ) ){
-         print_r( $message, true );
-      } else {
-         echo $message ;
-      }
-    }
-  }
+	function _pdalog( $message ) {
+		if( WP_DEBUG === true ){
+			if( is_array( $message ) || is_object( $message ) ){
+				print_r( $message, true );
+			} else {
+				echo $message ;
+			}
+		}
+	}
 }
